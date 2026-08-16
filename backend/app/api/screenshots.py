@@ -14,6 +14,7 @@ from app.schemas.screenshot import (
     UploadScreenshotItem,
 )
 from app.services.file_service import (
+    compute_file_hash,
     get_media_type_for_path,
     resolve_file_path,
     save_upload_file,
@@ -24,6 +25,7 @@ from app.services.screenshot_service import (
     create_screenshot,
     document_to_detail,
     document_to_summary,
+    get_screenshot_by_file_hash,
     get_screenshot_or_404,
     list_screenshots,
 )
@@ -61,6 +63,18 @@ async def upload_screenshots(
                 detail=f"File '{upload_file.filename}' is empty.",
             )
 
+        file_hash = compute_file_hash(file_content)
+        existing = await get_screenshot_by_file_hash(file_hash)
+        if existing is not None:
+            uploaded_items.append(
+                UploadScreenshotItem(
+                    id=str(existing["_id"]),
+                    filename=existing["filename"],
+                    status=existing["processing_status"],
+                )
+            )
+            continue
+
         screenshot_object_id = ObjectId()
         screenshot_id = str(screenshot_object_id)
         _, relative_path = await save_upload_file(
@@ -72,6 +86,7 @@ async def upload_screenshots(
             screenshot_id=screenshot_id,
             filename=upload_file.filename,
             file_path=relative_path,
+            file_hash=file_hash,
         )
         background_tasks.add_task(process_screenshot, screenshot_id)
         uploaded_items.append(

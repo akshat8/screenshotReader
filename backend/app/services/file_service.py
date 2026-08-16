@@ -1,3 +1,4 @@
+import hashlib
 import logging
 from pathlib import Path
 from uuid import uuid4
@@ -31,6 +32,10 @@ def validate_extension(filename: str) -> str:
             detail=f"Invalid file type for '{filename}'. Allowed: PNG, JPG, JPEG, WEBP.",
         )
     return extension
+
+
+def compute_file_hash(file_content: bytes) -> str:
+    return hashlib.sha256(file_content).hexdigest()
 
 
 def validate_file_size(file_size: int) -> None:

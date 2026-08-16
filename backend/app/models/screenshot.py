@@ -28,6 +28,6 @@ class ScreenshotDocument(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     def to_mongo(self) -> dict:
-        data = self.model_dump()
+        data = self.model_dump(exclude_none=True)
         data["processing_status"] = self.processing_status.value
         return data

@@ -41,16 +41,23 @@ def document_to_detail(document: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+async def get_screenshot_by_file_hash(file_hash: str) -> Optional[dict[str, Any]]:
+    collection = get_screenshots_collection()
+    return await collection.find_one({"file_hash": file_hash})
+
+
 async def create_screenshot(
     screenshot_id: str,
     filename: str,
     file_path: str,
+    file_hash: str,
 ) -> dict[str, Any]:
     object_id = parse_object_id(screenshot_id)
     now = datetime.utcnow()
     document = ScreenshotDocument(
         filename=filename,
         file_path=file_path,
+        file_hash=file_hash,
         processing_status=ProcessingStatus.PROCESSING,
         pinecone_id=screenshot_id,
         created_at=now,
