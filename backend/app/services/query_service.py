@@ -29,15 +29,25 @@ async def execute_query(user_query: str) -> dict[str, Any]:
 
     screenshot_ids = [hit.screenshot_id for hit in hits]
     context_documents = await get_context_documents(screenshot_ids)
+    document_map = {str(document["_id"]): document for document in context_documents}
+
+    if not document_map:
+        return {
+            "answer": NOT_FOUND_MESSAGE,
+            "sources": [],
+            "found": False,
+        }
+
     answer = await generate_answer(user_query, context_documents)
 
     sources = [
         {
             "id": hit.screenshot_id,
-            "filename": hit.filename,
+            "filename": document_map[hit.screenshot_id]["filename"],
             "relevance": round(hit.final_score, 4),
         }
         for hit in hits
+        if hit.screenshot_id in document_map
     ]
 
     return {

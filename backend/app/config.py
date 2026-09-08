@@ -20,8 +20,8 @@ class Settings(BaseSettings):
 
     openrouter_api_key: str = ""
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    openrouter_vision_model: str = "nvidia/nemotron-nano-12b-v2-vl:free"
-    openrouter_llm_model: str = "nvidia/nemotron-nano-9b-v2:free"
+    openrouter_vision_model: str = "openrouter/free"
+    openrouter_llm_model: str = "openrouter/free"
 
     embedding_model: str = "BAAI/bge-large-en-v1.5"
 

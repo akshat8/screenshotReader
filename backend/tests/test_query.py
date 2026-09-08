@@ -67,6 +67,51 @@ async def test_execute_query_returns_answer_when_relevant():
 
 
 @pytest.mark.asyncio
+async def test_execute_query_excludes_sources_without_context_documents():
+    valid_hit = RetrievalHit(
+        screenshot_id="507f1f77bcf86cd799439011",
+        filename="chat.png",
+        semantic_score=0.9,
+        keyword_score=0.8,
+        final_score=0.87,
+    )
+    stale_hit = RetrievalHit(
+        screenshot_id="507f1f77bcf86cd799439012",
+        filename="unknown",
+        semantic_score=0.7,
+        keyword_score=0.0,
+        final_score=0.49,
+    )
+    context_doc = {
+        "_id": "507f1f77bcf86cd799439011",
+        "filename": "chat.png",
+        "searchable_text": "OCR:\n9876543210",
+    }
+    with (
+        patch(
+            "app.services.query_service.hybrid_search",
+            new_callable=AsyncMock,
+            return_value=[valid_hit, stale_hit],
+        ),
+        patch(
+            "app.services.query_service.get_context_documents",
+            new_callable=AsyncMock,
+            return_value=[context_doc],
+        ),
+        patch(
+            "app.services.query_service.generate_answer",
+            new_callable=AsyncMock,
+            return_value="The phone number is 9876543210.",
+        ),
+    ):
+        result = await execute_query("What was the phone number?")
+
+    assert result["found"] is True
+    assert len(result["sources"]) == 1
+    assert result["sources"][0]["filename"] == "chat.png"
+
+
+@pytest.mark.asyncio
 async def test_query_endpoint_success(api_client):
     mock_result = {
         "answer": "The phone number is 9876543210.",

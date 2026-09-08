@@ -96,6 +96,10 @@ async def hybrid_search(query: str, top_k: int | None = None) -> list[RetrievalH
 
     merged_hits: list[RetrievalHit] = []
     for screenshot_id in merged_ids:
+        filename = filename_map.get(screenshot_id)
+        if filename is None:
+            continue
+
         semantic_score = semantic_scores.get(screenshot_id, 0.0)
         keyword_score = keyword_scores.get(screenshot_id, 0.0)
         final_score = (
@@ -105,7 +109,7 @@ async def hybrid_search(query: str, top_k: int | None = None) -> list[RetrievalH
         merged_hits.append(
             RetrievalHit(
                 screenshot_id=screenshot_id,
-                filename=filename_map.get(screenshot_id, "unknown"),
+                filename=filename,
                 semantic_score=semantic_score,
                 keyword_score=keyword_score,
                 final_score=final_score,
