@@ -65,6 +65,7 @@ async def health_check():
             "mongodb": "connected",
             "pinecone_configured": bool(settings.pinecone_api_key),
             "openrouter_configured": bool(settings.openrouter_api_key),
+            "orchestration": "langgraph",
         }
     except Exception as exc:
         logger.exception("Health check failed")

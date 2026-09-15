@@ -16,7 +16,7 @@ async def test_execute_query_returns_not_found_when_below_threshold():
         final_score=0.07,
     )
     with patch(
-        "app.services.query_service.hybrid_search",
+        "app.graphs.query_graph.hybrid_search",
         new_callable=AsyncMock,
         return_value=[low_score_hit],
     ):
@@ -43,17 +43,17 @@ async def test_execute_query_returns_answer_when_relevant():
     }
     with (
         patch(
-            "app.services.query_service.hybrid_search",
+            "app.graphs.query_graph.hybrid_search",
             new_callable=AsyncMock,
             return_value=[hit],
         ),
         patch(
-            "app.services.query_service.get_context_documents",
+            "app.graphs.query_graph.get_context_documents",
             new_callable=AsyncMock,
             return_value=[context_doc],
         ),
         patch(
-            "app.services.query_service.generate_answer",
+            "app.graphs.query_graph.generate_answer",
             new_callable=AsyncMock,
             return_value="The phone number is 9876543210.",
         ),
@@ -89,17 +89,17 @@ async def test_execute_query_excludes_sources_without_context_documents():
     }
     with (
         patch(
-            "app.services.query_service.hybrid_search",
+            "app.graphs.query_graph.hybrid_search",
             new_callable=AsyncMock,
             return_value=[valid_hit, stale_hit],
         ),
         patch(
-            "app.services.query_service.get_context_documents",
+            "app.graphs.query_graph.get_context_documents",
             new_callable=AsyncMock,
             return_value=[context_doc],
         ),
         patch(
-            "app.services.query_service.generate_answer",
+            "app.graphs.query_graph.generate_answer",
             new_callable=AsyncMock,
             return_value="The phone number is 9876543210.",
         ),

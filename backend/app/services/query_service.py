@@ -1,57 +1,20 @@
 import logging
 from typing import Any
 
-from app.config import settings
-from app.services.openrouter_service import generate_answer
-from app.services.retrieval_service import get_context_documents, hybrid_search
+from app.graphs.query_graph import get_query_graph
 
 logger = logging.getLogger(__name__)
 
-NOT_FOUND_MESSAGE = (
-    "I couldn't find enough information in your uploaded screenshots to answer this."
-)
-
-
-def is_relevant(hits: list) -> bool:
-    if not hits:
-        return False
-    return hits[0].final_score >= settings.relevance_threshold
+# Re-export for tests and API consumers.
+from app.services.query_helpers import NOT_FOUND_MESSAGE, is_relevant  # noqa: F401
 
 
 async def execute_query(user_query: str) -> dict[str, Any]:
-    hits = await hybrid_search(user_query)
-    if not is_relevant(hits):
-        return {
-            "answer": NOT_FOUND_MESSAGE,
-            "sources": [],
-            "found": False,
-        }
-
-    screenshot_ids = [hit.screenshot_id for hit in hits]
-    context_documents = await get_context_documents(screenshot_ids)
-    document_map = {str(document["_id"]): document for document in context_documents}
-
-    if not document_map:
-        return {
-            "answer": NOT_FOUND_MESSAGE,
-            "sources": [],
-            "found": False,
-        }
-
-    answer = await generate_answer(user_query, context_documents)
-
-    sources = [
-        {
-            "id": hit.screenshot_id,
-            "filename": document_map[hit.screenshot_id]["filename"],
-            "relevance": round(hit.final_score, 4),
-        }
-        for hit in hits
-        if hit.screenshot_id in document_map
-    ]
+    graph = get_query_graph()
+    result = await graph.ainvoke({"user_query": user_query})
 
     return {
-        "answer": answer,
-        "sources": sources,
-        "found": True,
+        "answer": result.get("answer", NOT_FOUND_MESSAGE),
+        "sources": result.get("sources", []),
+        "found": result.get("found", False),
     }

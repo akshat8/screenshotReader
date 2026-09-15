@@ -15,32 +15,32 @@ def write_test_image(path: Path) -> None:
 async def test_process_screenshot_success(tmp_path: Path):
     with (
         patch(
-            "app.services.processing_service.get_screenshot_by_id",
+            "app.graphs.processing_graph.get_screenshot_by_id",
             new_callable=AsyncMock,
         ) as mock_get,
         patch(
-            "app.services.processing_service.update_screenshot_completed",
+            "app.graphs.processing_graph.update_screenshot_completed",
             new_callable=AsyncMock,
         ) as mock_completed,
         patch(
-            "app.services.processing_service.update_screenshot_failed",
+            "app.graphs.processing_graph.update_screenshot_failed",
             new_callable=AsyncMock,
         ) as mock_failed,
         patch("app.services.file_service.BACKEND_ROOT", tmp_path),
         patch(
-            "app.services.processing_service.extract_text", return_value="sample ocr"
+            "app.graphs.processing_graph.extract_text", return_value="sample ocr"
         ),
         patch(
-            "app.services.processing_service.describe_image",
+            "app.graphs.processing_graph.describe_image",
             new_callable=AsyncMock,
             return_value="sample description",
         ),
         patch(
-            "app.services.processing_service.embed_text",
+            "app.graphs.processing_graph.embed_text",
             return_value=[0.1] * 1024,
         ),
         patch(
-            "app.services.processing_service.upsert_screenshot_vector",
+            "app.graphs.processing_graph.upsert_screenshot_vector",
             new_callable=AsyncMock,
         ) as mock_upsert,
     ):
@@ -64,11 +64,11 @@ async def test_process_screenshot_success(tmp_path: Path):
 async def test_process_screenshot_marks_failed_on_error(tmp_path: Path):
     with (
         patch(
-            "app.services.processing_service.get_screenshot_by_id",
+            "app.graphs.processing_graph.get_screenshot_by_id",
             new_callable=AsyncMock,
         ) as mock_get,
         patch(
-            "app.services.processing_service.update_screenshot_completed",
+            "app.graphs.processing_graph.update_screenshot_completed",
             new_callable=AsyncMock,
         ) as mock_completed,
         patch(
@@ -76,9 +76,9 @@ async def test_process_screenshot_marks_failed_on_error(tmp_path: Path):
             new_callable=AsyncMock,
         ) as mock_failed,
         patch("app.services.file_service.BACKEND_ROOT", tmp_path),
-        patch("app.services.processing_service.extract_text", return_value="ocr text"),
+        patch("app.graphs.processing_graph.extract_text", return_value="ocr text"),
         patch(
-            "app.services.processing_service.describe_image",
+            "app.graphs.processing_graph.describe_image",
             new_callable=AsyncMock,
             side_effect=RuntimeError("OpenRouter down"),
         ),
