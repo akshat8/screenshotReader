@@ -5,11 +5,17 @@ from app.services.retrieval_service import RetrievalHit
 
 class QueryState(TypedDict, total=False):
     user_query: str
+    search_query: str
+    next_search_query: str
+    retrieval_attempts: int
     hits: list[RetrievalHit]
     context_documents: list[dict[str, Any]]
+    decision_action: str
+    clarifying_question: str
     answer: str
     sources: list[dict[str, Any]]
     found: bool
+    needs_clarification: bool
 
 
 class ProcessingState(TypedDict, total=False):

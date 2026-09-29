@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import Literal
+from collections.abc import Awaitable, Callable
+from typing import Literal, TypeVar
 
 from langgraph.graph import END, START, StateGraph
 
@@ -20,6 +21,33 @@ from app.services.searchable_text import build_searchable_text
 logger = logging.getLogger(__name__)
 
 _processing_graph = None
+_STAGE_ATTEMPTS = 2
+_T = TypeVar("_T")
+
+
+async def _run_with_retry(
+    stage: str,
+    screenshot_id: str,
+    operation: Callable[[], Awaitable[_T]],
+) -> _T:
+    """Run a processing stage, retrying once on failure."""
+    last_error: Exception | None = None
+    for attempt in range(1, _STAGE_ATTEMPTS + 1):
+        try:
+            return await operation()
+        except Exception as exc:
+            last_error = exc
+            logger.warning(
+                "%s attempt %s/%s failed for screenshot %s: %s",
+                stage,
+                attempt,
+                _STAGE_ATTEMPTS,
+                screenshot_id,
+                exc,
+            )
+    if last_error is None:
+        raise RuntimeError(f"{stage} failed for screenshot {screenshot_id}.")
+    raise last_error
 
 
 async def load_document_node(state: ProcessingState) -> dict:
@@ -53,15 +81,66 @@ def route_after_load(
 
 
 async def ocr_node(state: ProcessingState) -> dict:
-    ocr_text = await asyncio.to_thread(extract_text, state["image_path"])
-    logger.info("LangGraph OCR completed for %s", state["screenshot_id"])
-    return {"ocr_text": ocr_text}
+    screenshot_id = state["screenshot_id"]
+    try:
+        ocr_text = await _run_with_retry(
+            "OCR",
+            screenshot_id,
+            lambda: asyncio.to_thread(extract_text, state["image_path"]),
+        )
+    except Exception as exc:
+        await update_screenshot_failed(
+            screenshot_id,
+            f"OCR extraction failed: {exc}",
+        )
+        return {"halt": True}
+
+    logger.info("LangGraph OCR completed for %s", screenshot_id)
+    return {"ocr_text": ocr_text, "halt": False}
+
+
+def route_after_ocr(
+    state: ProcessingState,
+) -> Literal["vision", "__end__"]:
+    if state.get("halt"):
+        return END
+    return "vision"
 
 
 async def vision_node(state: ProcessingState) -> dict:
-    image_description = await describe_image(state["image_path"])
-    logger.info("LangGraph vision completed for %s", state["screenshot_id"])
-    return {"image_description": image_description}
+    screenshot_id = state["screenshot_id"]
+    try:
+        image_description = await _run_with_retry(
+            "Vision",
+            screenshot_id,
+            lambda: describe_image(state["image_path"]),
+        )
+    except Exception as exc:
+        ocr_text = (state.get("ocr_text") or "").strip()
+        if ocr_text:
+            logger.warning(
+                "Vision captioning failed for %s; continuing with OCR-only search: %s",
+                screenshot_id,
+                exc,
+            )
+            return {"image_description": "", "halt": False}
+
+        await update_screenshot_failed(
+            screenshot_id,
+            f"Vision captioning failed and no OCR text was available: {exc}",
+        )
+        return {"halt": True, "image_description": ""}
+
+    logger.info("LangGraph vision completed for %s", screenshot_id)
+    return {"image_description": image_description, "halt": False}
+
+
+def route_after_vision(
+    state: ProcessingState,
+) -> Literal["prepare_index", "__end__"]:
+    if state.get("halt"):
+        return END
+    return "prepare_index"
 
 
 async def prepare_index_node(state: ProcessingState) -> dict:
@@ -107,8 +186,8 @@ def build_processing_graph():
 
     graph.add_edge(START, "load_document")
     graph.add_conditional_edges("load_document", route_after_load)
-    graph.add_edge("ocr", "vision")
-    graph.add_edge("vision", "prepare_index")
+    graph.add_conditional_edges("ocr", route_after_ocr)
+    graph.add_conditional_edges("vision", route_after_vision)
     graph.add_edge("prepare_index", "persist")
     graph.add_edge("persist", END)
 

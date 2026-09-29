@@ -19,6 +19,7 @@ async def query_screenshots(request: QueryRequest):
             answer=result["answer"],
             sources=sources,
             found=result["found"],
+            needs_clarification=result.get("needs_clarification", False),
         )
     except RuntimeError as exc:
         logger.error("Query failed: %s", exc)

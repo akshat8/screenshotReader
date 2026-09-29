@@ -17,3 +17,4 @@ class QueryResponse(BaseModel):
     answer: str
     sources: List[QuerySource]
     found: bool
+    needs_clarification: bool = False

@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     hybrid_semantic_weight: float = 0.7
     hybrid_keyword_weight: float = 0.3
     top_k: int = 5
+    max_retrieval_attempts: int = 2
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000

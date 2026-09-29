@@ -235,6 +235,10 @@ body {
   color: #4b5563;
 }
 
+.answer-clarification {
+  border-left: 4px solid #1d4ed8;
+}
+
 .sources-section {
   margin-top: 1.5rem;
 }

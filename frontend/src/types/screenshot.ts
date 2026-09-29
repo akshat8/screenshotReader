@@ -39,4 +39,5 @@ export interface QueryResponse {
   answer: string;
   sources: QuerySource[];
   found: boolean;
+  needs_clarification?: boolean;
 }

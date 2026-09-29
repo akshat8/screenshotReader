@@ -24,7 +24,12 @@ def _encode_image_as_data_url(image_path: str) -> str:
     return f"data:{media_type};base64,{encoded}"
 
 
-async def _chat_completion(messages: list, model: str | None = None) -> str:
+async def _chat_completion(
+    messages: list,
+    model: str | None = None,
+    response_format: dict | None = None,
+    max_attempts: int = 2,
+) -> str:
     if not settings.openrouter_api_key:
         raise RuntimeError("OPENROUTER_API_KEY is not configured.")
 
@@ -37,10 +42,12 @@ async def _chat_completion(messages: list, model: str | None = None) -> str:
         "model": selected_model,
         "messages": messages,
     }
+    if response_format is not None:
+        payload["response_format"] = response_format
     url = f"{settings.openrouter_base_url.rstrip('/')}/chat/completions"
 
     last_error: Exception | None = None
-    for attempt in range(2):
+    for attempt in range(max_attempts):
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(url, headers=headers, json=payload)
@@ -56,6 +63,41 @@ async def _chat_completion(messages: list, model: str | None = None) -> str:
             logger.warning("OpenRouter request attempt %s failed: %s", attempt + 1, exc)
 
     raise RuntimeError(f"OpenRouter request failed: {last_error}")
+
+
+async def request_structured_completion(
+    messages: list,
+    schema_name: str,
+    schema: dict,
+) -> str:
+    """Ask the LLM for JSON that matches schema, with a JSON-object fallback."""
+    schema_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": schema_name,
+            "strict": True,
+            "schema": schema,
+        },
+    }
+    try:
+        return await _chat_completion(
+            messages,
+            model=settings.openrouter_llm_model,
+            response_format=schema_format,
+            max_attempts=1,
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+        if "400" not in message and "422" not in message:
+            raise
+        logger.warning(
+            "JSON schema output was rejected; retrying with JSON object mode."
+        )
+        return await _chat_completion(
+            messages,
+            model=settings.openrouter_llm_model,
+            response_format={"type": "json_object"},
+        )
 
 
 async def describe_image(image_path: str) -> str:

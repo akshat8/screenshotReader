@@ -65,7 +65,11 @@ export function Home() {
 
       {queryResult && (
         <>
-          <AnswerCard answer={queryResult.answer} found={queryResult.found} />
+          <AnswerCard
+            answer={queryResult.answer}
+            found={queryResult.found}
+            needsClarification={queryResult.needs_clarification}
+          />
           {queryResult.sources.length > 0 && (
             <section
               className="sources-section"

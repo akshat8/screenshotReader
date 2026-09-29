@@ -17,4 +17,5 @@ async def execute_query(user_query: str) -> dict[str, Any]:
         "answer": result.get("answer", NOT_FOUND_MESSAGE),
         "sources": result.get("sources", []),
         "found": result.get("found", False),
+        "needs_clarification": result.get("needs_clarification", False),
     }
