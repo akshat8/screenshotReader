@@ -66,6 +66,12 @@ async def health_check():
             "pinecone_configured": bool(settings.pinecone_api_key),
             "openrouter_configured": bool(settings.openrouter_api_key),
             "orchestration": "langgraph",
+            "query_agent": [
+                "plan_goals",
+                "tool_calls",
+                "goal_tracking",
+                "self_critique",
+            ],
         }
     except Exception as exc:
         logger.exception("Health check failed")

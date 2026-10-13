@@ -29,11 +29,10 @@ class Settings(BaseSettings):
     max_upload_count: int = 50
     max_file_size_mb: int = 10
 
-    relevance_threshold: float = 0.35
     hybrid_semantic_weight: float = 0.7
     hybrid_keyword_weight: float = 0.3
     top_k: int = 5
-    max_retrieval_attempts: int = 2
+    max_agent_steps: int = 4
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000

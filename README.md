@@ -1,6 +1,6 @@
 # Screenshot Memory
 
-Personal screenshot search: upload images, extract text with OCR + vision, search with hybrid retrieval, get grounded LLM answers with sources.
+Personal screenshot search: upload images, extract text with OCR + vision, then a LangGraph agent plans goals, calls LangChain retrieval tools, tracks which goals are satisfied, critiques its draft, and returns grounded answers with sources.
 
 ## Stack
 

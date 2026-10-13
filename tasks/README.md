@@ -89,7 +89,7 @@ Read **[CONVENTIONS.md](CONVENTIONS.md)** before starting any task.
 | 21 | Pinecone vector search | [block-04-query/task-21-pinecone-vector-search.md](block-04-query/task-21-pinecone-vector-search.md) |
 | 22 | MongoDB text search | [block-04-query/task-22-mongodb-text-search.md](block-04-query/task-22-mongodb-text-search.md) |
 | 23 | Hybrid retrieval merge | [block-04-query/task-23-hybrid-retrieval.md](block-04-query/task-23-hybrid-retrieval.md) |
-| 24 | Relevance threshold | [block-04-query/task-24-relevance-threshold.md](block-04-query/task-24-relevance-threshold.md) |
+| 24 | Relevance threshold (superseded by the query agent) | [block-04-query/task-24-relevance-threshold.md](block-04-query/task-24-relevance-threshold.md) |
 | 25 | OpenRouter LLM answer | [block-04-query/task-25-openrouter-llm-answer.md](block-04-query/task-25-openrouter-llm-answer.md) |
 | 26 | POST query endpoint | [block-04-query/task-26-post-query-endpoint.md](block-04-query/task-26-post-query-endpoint.md) |
 

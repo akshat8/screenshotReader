@@ -35,9 +35,16 @@ export interface QuerySource {
   relevance: number;
 }
 
+export interface AgentDecision {
+  step: string;
+  decision: string;
+  reason: string;
+}
+
 export interface QueryResponse {
   answer: string;
   sources: QuerySource[];
   found: boolean;
   needs_clarification?: boolean;
+  decisions?: AgentDecision[];
 }

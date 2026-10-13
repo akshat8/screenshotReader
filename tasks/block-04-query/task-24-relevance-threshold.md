@@ -1,10 +1,14 @@
 # Task 24: Relevance threshold
 
 **Block:** 4 — Query pipeline  
-**Status:** done  
+**Status:** superseded  
 **Depends on:** Task 23
 
-## Objective
+## Current behavior
+
+The live query path does not use a numeric relevance gate. A LangGraph agent plans sub-goals, selects retrieval tools, and decides whether the screenshots can answer. Ranking scores are display metadata only.
+
+## Historical objective
 
 Skip LLM when no screenshot is sufficiently relevant (hallucination guard).
 

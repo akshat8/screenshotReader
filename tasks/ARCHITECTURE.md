@@ -49,13 +49,29 @@ Pinecone index                      ← embedding vector + minimal metadata
 }
 ```
 
-## Hybrid retrieval
+## Query agent (LangGraph + LangChain tools)
 
 ```text
-final_score = 0.7 × semantic_score (Pinecone) + 0.3 × keyword_score (MongoDB $text)
+plan_goals → agent ⇄ ToolNode(semantic_search | keyword_search | read_screenshot)
+                │              → collect → assess_goals
+                ↓
+         answer → draft → critique → accept | revise | reopen goal
+                ↓
+         clarify | give_up
 ```
 
-Top 5 → relevance gate → OpenRouter LLM or "not found".
+The chat model is bound to the LangChain tools and the transcript is the
+LangGraph message list. `plan_goals` writes 1–3 checklist items. After each
+tool result, `assess_goals` marks each item `open`, `satisfied`, or `blocked`.
+`answer` is refused while a goal is still open. Critique can revise the draft
+or reopen a goal and send the agent back to the tools.
+
+Python enforces bounds (`MAX_AGENT_STEPS`, screenshot ids that already appeared
+in a search, one revise / one search-again). Ranking scores are display
+metadata, not a yes/no relevance gate.
+
+Search tools use Pinecone (semantic) and MongoDB `$text` (keyword) separately so
+the model can choose which to call.
 
 ## OpenRouter models (verify at openrouter.ai/models)
 
@@ -78,9 +94,9 @@ OPENROUTER_VISION_MODEL=google/gemini-2.0-flash-exp:free
 OPENROUTER_LLM_MODEL=meta-llama/llama-3.2-3b-instruct:free
 EMBEDDING_MODEL=all-MiniLM-L6-v2
 UPLOAD_DIR=./uploads
-RELEVANCE_THRESHOLD=0.35
 HYBRID_SEMANTIC_WEIGHT=0.7
 HYBRID_KEYWORD_WEIGHT=0.3
 TOP_K=5
+MAX_AGENT_STEPS=4
 MAX_UPLOAD_COUNT=50
 ```

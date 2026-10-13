@@ -43,9 +43,11 @@ pip install -r requirements.txt
 | ------ | ------------ | ---------------------------------------------- |
 | POST   | `/api/query` | Natural language search — `{ "query": "..." }` |
 
-Response: `{ "answer", "sources": [{ "id", "filename", "relevance" }], "found" }`
+Response: `{ "answer", "sources": [{ "id", "filename", "relevance" }], "found", "needs_clarification" }`
 
-Hybrid retrieval: `0.7 × semantic (Pinecone) + 0.3 × keyword (MongoDB $text)`.
+LangGraph query agent: plan goals → the model calls LangChain tools
+(`semantic_search`, `keyword_search`, `read_screenshot`) → goal status →
+draft answer → critique (accept / revise / reopen a goal).
 
 ## API (Block 2)
 

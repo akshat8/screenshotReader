@@ -1,13 +1,17 @@
+import type { AgentDecision } from "../types/screenshot";
+
 interface AnswerCardProps {
   answer: string;
   found: boolean;
   needsClarification?: boolean;
+  decisions?: AgentDecision[];
 }
 
 export function AnswerCard({
   answer,
   found,
   needsClarification = false,
+  decisions = [],
 }: AnswerCardProps) {
   const heading = needsClarification ? "Clarifying Question" : "Answer";
   let textClassName = "answer-text";
@@ -34,6 +38,22 @@ export function AnswerCard({
       >
         {answer}
       </div>
+      {decisions.length > 0 && (
+        <div data-testid="agent-decisions">
+          <h3 className="section-subtitle">Agent decisions</h3>
+          <ol className="decision-list">
+            {decisions.map((item, index) => (
+              <li key={`${item.step}-${index}`} data-testid="agent-decision-item">
+                <span className="decision-step">{item.step}</span>
+                <span>{item.decision}</span>
+                {item.reason ? (
+                  <span className="decision-reason">{item.reason}</span>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </section>
   );
 }

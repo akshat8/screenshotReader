@@ -239,6 +239,27 @@ body {
   border-left: 4px solid #1d4ed8;
 }
 
+.decision-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.decision-list li {
+  margin-bottom: 0.35rem;
+}
+
+.decision-step {
+  display: inline-block;
+  min-width: 7rem;
+  margin-right: 0.5rem;
+  font-weight: 600;
+}
+
+.decision-reason {
+  display: block;
+  color: #4b5563;
+}
+
 .sources-section {
   margin-top: 1.5rem;
 }

@@ -69,6 +69,7 @@ export function Home() {
             answer={queryResult.answer}
             found={queryResult.found}
             needsClarification={queryResult.needs_clarification}
+            decisions={queryResult.decisions}
           />
           {queryResult.sources.length > 0 && (
             <section

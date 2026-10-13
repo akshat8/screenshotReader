@@ -13,8 +13,15 @@ class QuerySource(BaseModel):
     relevance: float
 
 
+class AgentDecision(BaseModel):
+    step: str
+    decision: str
+    reason: str = ""
+
+
 class QueryResponse(BaseModel):
     answer: str
     sources: List[QuerySource]
     found: bool
     needs_clarification: bool = False
+    decisions: List[AgentDecision] = []

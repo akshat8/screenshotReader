@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from app.schemas.query import QueryRequest, QueryResponse, QuerySource
+from app.schemas.query import AgentDecision, QueryRequest, QueryResponse, QuerySource
 from app.services.query_service import execute_query
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,10 @@ async def query_screenshots(request: QueryRequest):
             sources=sources,
             found=result["found"],
             needs_clarification=result.get("needs_clarification", False),
+            decisions=[
+                AgentDecision(**decision)
+                for decision in result.get("decisions") or []
+            ],
         )
     except RuntimeError as exc:
         logger.error("Query failed: %s", exc)
